@@ -7,6 +7,6 @@ import numpy as np
 
 # iterate through the buses and construct an array with the number of friends they have on the buses
 # ILP to pick the bus with the max heuristic (based on vectors)
-# heuristic is # of friendships created - factor * potential rowdy groups created (but make -infinity if a rowdy group is created)
+# heuristic is # of friendships created - factor * potential rowdy groups created (but make -large value if a rowdy group is created--recalculate friendships if a rowdy group has to be made)
 
 # simulated anealing to swap for best solution
