@@ -46,13 +46,55 @@ def parse_input(folder_name):
 
 def solve():
     #TODO: Write this method as you like. We'd recommend changing the arguments here as well
+    graph, num_buses, size_bus, constraints = parse_input(path_to_outputs)
 
     # construct a dictionary mapping each person to the rowdy groups they're in
-
+    students = list(graph.nodes)
+    rowdy_group_to_students = np.zeros((len(constraints), len(list(students))))
+    for rowdy_group_index in range(len(constraints)):
+        for student_index in range(len(students)):
+            if constraints[rowdy_group_index].contains(students[student_index]):
+                rowdy_group_to_students[rowdy_group_index, student_index] = 1
+    
+    buses = []
+    for i in range(num_buses):
+        buses.append([])
     # iterate through every person
+    for student in student_to_rowdy_group:
+        # make list of friendships in each bus
+        friends = []
+        # iterate through the buses and construct an array with the number of friends they have on the buses
+        for bus in buses:
+            count = 0
+            for friend in graph.adj(student):
+                if bus.contains(friend):
+                    count+=1
+            friends.append(count)
 
-    # iterate through the buses and construct an array with the number of friends they have on the buses
-    # ILP to pick the bus with the max heuristic (based on vectors)
+        friends = np.array(friends)
+        # ILP to pick the bus with the max heuristic (based on vectors)
+        P = size_bus
+        weights = friends
+        utilities = np.array([92, 57, 49, 68, 60, 43, 67, 84, 87, 72]) #rowdy groups
+
+        # The variable we are solving for
+        selection = cvxpy.Bool(len(buses))
+
+        # The sum of the weights should be less than or equal to P
+        weight_constraint = buses + selection <= P
+
+        # Our total utility is the sum of the item utilities
+        total_utility = utilities * selection
+
+        # We tell cvxpy that we want to maximize total utility
+        # subject to weight_constraint. All constraints in
+        # cvxpy must be passed as a list
+        knapsack_problem = cvxpy.Problem(cvxpy.Maximize(total_utility), [weight_constraint])
+
+        #append friend to bus
+
+# Solving the problem
+knapsack_problem.solve(solver=cvxpy.GLPK_MI)
     # heuristic is # of friendships created - factor * potential rowdy groups created (but make -large value if a rowdy group is created--recalculate friendships if a rowdy group has to be made)
 
     # simulated anealing to swap for best solution
