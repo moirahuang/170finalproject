@@ -55,21 +55,20 @@ def solve():
         for student_index in range(len(students)):
             if constraints[rowdy_group_index].contains(students[student_index]):
                 rowdy_group_to_students[rowdy_group_index, student_index] = 1
-    
-    buses = []
-    for i in range(num_buses):
-        buses.append([])
+
+
+    buses = np.zeros(shape=(num_buses, size_bus))
     # iterate through every person
-    for student in student_to_rowdy_group:
+    for student in students:
         # make list of friendships in each bus
-        friends = []
+        friends = np.zeros(shape=(num_buses, 1))
         # iterate through the buses and construct an array with the number of friends they have on the buses
         for bus in buses:
             count = 0
             for friend in graph.adj(student):
-                if bus.contains(friend):
+                if np.any(bus[:, 0] == friend):
                     count+=1
-            friends.append(count)
+            friends[]
 
         friends = np.array(friends)
         # ILP to pick the bus with the max heuristic (based on vectors)
