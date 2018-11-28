@@ -50,45 +50,44 @@ def solve():
 
     # construct a dictionary mapping each person to the rowdy groups they're in
     students = list(graph.nodes)
-    rowdy_group_to_students = np.zeros((len(constraints), len(list(students))))
-    for rowdy_group_index in range(len(constraints)):
+    num_rowdy_groups = len(constraints)
+    bus_assignments = {}
+    for i in range(num_buses):
+        bus_assigments[i] = []
+    #M
+    rowdy_group_to_students = np.zeros((num_rowdy_groups, len(students)))
+    for rowdy_group_index in range(num_rowdy_groups):
         for student_index in range(len(students)):
             if constraints[rowdy_group_index].contains(students[student_index]):
                 rowdy_group_to_students[rowdy_group_index, student_index] = 1
 
+    sums = np.sum(rowdy_group_to_students, axis=1)
+    scaled_rowdy_group_to_students = rowdy_group_to_students / sums[:,None]
+    #C
+    fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups))
+    #L
+    number_of_friendships_in_bus_for_rowdy_group = np.zeros(shape=(num_buses, num_rowdy_groups))
+    #I
+    floored_fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups))
 
-    buses = np.zeros(shape=(num_buses, size_bus))
+    #sort students by number of rowdy groups they're in
     # iterate through every person
-    for student in students:
-        # make list of friendships in each bus
-        friends = np.zeros(shape=(num_buses, 1))
-        # iterate through the buses and construct an array with the number of friends they have on the buses
-        for bus in buses:
+    for student in np.argsort(np.sum(rowdy_group_to_students, axis=0)):
+        additional_friendships = np.zeros(shape=(num_buses, 1)))
+        for bus in range(num_buses):
             count = 0
             for friend in graph.adj(student):
                 if np.any(bus[:, 0] == friend):
                     count+=1
-            friends[]
+            additional_friendships[bus] = count
 
-        friends = np.array(friends)
-        # ILP to pick the bus with the max heuristic (based on vectors)
-        P = size_bus
-        weights = friends
-        utilities = np.array([92, 57, 49, 68, 60, 43, 67, 84, 87, 72]) #rowdy groups
+        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + rowdy_group_to_students[:,student] @ additional_friendships.T
+        fraction_of_rowdy_group_in_bus_temp               = fraction_of_rowdy_group_in_bus + scaled_rowdy_group_to_students[:,studnet] @ np.ones(shape=additional_friendships.shape).T
+        floored_fraction_of_rowdy_group_in_bus_temp       = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
-        # The variable we are solving for
-        selection = cvxpy.Bool(len(buses))
+        heuristic = additional_friendships - number_of_friendships_in_bus_for_rowdy_group_temp.T @ (floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups)
+        
 
-        # The sum of the weights should be less than or equal to P
-        weight_constraint = buses + selection <= P
-
-        # Our total utility is the sum of the item utilities
-        total_utility = utilities * selection
-
-        # We tell cvxpy that we want to maximize total utility
-        # subject to weight_constraint. All constraints in
-        # cvxpy must be passed as a list
-        knapsack_problem = cvxpy.Problem(cvxpy.Maximize(total_utility), [weight_constraint])
 
         #append friend to bus
 
