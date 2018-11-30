@@ -44,9 +44,9 @@ def parse_input(folder_name):
 
     return graph, num_buses, size_bus, constraints
 
-def solve():
+def solve(graph, num_buses, size_bus, constraints):
     #TODO: Write this method as you like. We'd recommend changing the arguments here as well
-    graph, num_buses, size_bus, constraints = parse_input(path_to_outputs)
+    # graph, num_buses, size_bus, constraints = parse_input(path_to_outputs)
 
     # construct a dictionary mapping each person to the rowdy groups they're in
     students = list(graph.nodes)
@@ -85,8 +85,16 @@ def solve():
         fraction_of_rowdy_group_in_bus_temp               = fraction_of_rowdy_group_in_bus + scaled_rowdy_group_to_students[:,studnet] @ np.ones(shape=additional_friendships.shape).T
         floored_fraction_of_rowdy_group_in_bus_temp       = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
-        heuristic = additional_friendships - number_of_friendships_in_bus_for_rowdy_group_temp.T @ (floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups)
-        
+        heuristics = additional_friendships - number_of_friendships_in_bus_for_rowdy_group_temp.T @ (floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups)
+
+        sorted_heuristic_indices = np.argsort(-heuristics)
+        # Put student in the bus with highest heuristic while ensuring bus still has space
+
+        for idx in sorted_heuristic_indices:
+            load = len(bus_assignments[idx])
+            if load < size_bus:
+                bus_assignments[idx].append(student)
+                break
 
 
         #append friend to bus
