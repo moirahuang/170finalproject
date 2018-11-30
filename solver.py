@@ -69,7 +69,11 @@ def solve(graph, num_buses, size_bus, constraints):
         for student_index in range(len(students)):
             if students[student_index] in constraints[rowdy_group_index]:
                 rowdy_group_to_students[rowdy_group_index, student_index] = 1
+        # print(rowdy_group_to_students[student_index])
+    # print(rowdy_group_to_students)
+    # print(constraints)
     sums = np.sum(rowdy_group_to_students, axis=1)
+    # print(sums)
     scaled_rowdy_group_to_students = rowdy_group_to_students / sums[:,None]
     #C
     fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups), dtype=float)
@@ -78,15 +82,12 @@ def solve(graph, num_buses, size_bus, constraints):
     #I
     floored_fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups), dtype=float)
 
-    num_friends_in_bus_by_friend = np.zeros(shape=(len(students))
+    num_friends_in_bus_by_friend = np.zeros(shape=(len(students)))
     #sort students by number of rowdy groups they're in
     # iterate through every person
     student_ordering = np.argsort(-np.sum(rowdy_group_to_students, axis=0))
-    print(rowdy_group_to_students)
-    print(1/0)
     for i, student in enumerate(student_ordering[:num_buses]):
         bus_assignments[i].append(student)
-
     for student in student_ordering[num_buses:]:
         additional_friendships = np.zeros(shape=(num_buses, 1), dtype=float)
         friends_in_busses = []
@@ -105,7 +106,9 @@ def solve(graph, num_buses, size_bus, constraints):
         cost = np.array(list(map(lambda e: np.dot(e[0], e[1]), zip((floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups).tolist(), number_of_friendships_in_bus_for_rowdy_group_temp.tolist())))).reshape(additional_friendships.size)
 
         heuristics = reward - cost
-
+        print(heuristics)
+        print(cost)
+        print(1/0)
         sorted_heuristic_indices = np.argsort(-heuristics)
         # Put student in the bus with highest heuristic while ensuring bus still has space
 
@@ -143,10 +146,10 @@ def main():
             os.mkdir(output_category_path)
 
         for input_folder in os.listdir(category_dir):
-            input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
+            # input_name = os.fsdecode(input_folder)
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "1")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + input_name + ".out", "w")
+            output_file = open(output_category_path + "/" + "1" + ".out", "w")
 
             #TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
