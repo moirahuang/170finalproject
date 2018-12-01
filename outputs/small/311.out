@@ -1,4 +1,4 @@
-[22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
-[15, 32, 33, 34, 35, 37, 21, 20, 19, 18]
-[0, 1, 2, 3, 4, 5, 6, 7, 38, 8]
-[36, 10, 11, 12, 13, 14, 16, 17, 9, 39]
+['Vertex15', 'Vertex38', 'Vertex28', 'Vertex9', 'Vertex2', 'Vertex37', 'Vertex25', 'Vertex7', 'Vertex34', 'Vertex16']
+['Vertex22', 'Vertex18', 'Vertex8', 'Vertex31', 'Vertex32', 'Vertex3', 'Vertex29', 'Vertex23', 'Vertex14', 'Vertex10']
+['Vertex0', 'Vertex12', 'Vertex39', 'Vertex26', 'Vertex30', 'Vertex4', 'Vertex21', 'Vertex19', 'Vertex20', 'Vertex35']
+['Vertex36', 'Vertex5', 'Vertex24', 'Vertex33', 'Vertex6', 'Vertex13', 'Vertex27', 'Vertex17', 'Vertex11', 'Vertex1']
