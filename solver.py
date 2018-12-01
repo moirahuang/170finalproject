@@ -88,8 +88,7 @@ def solve(graph, num_buses, size_bus, constraints):
     # iterate through every person
     student_ordering = np.argsort(-np.sum(rowdy_group_to_students, axis=0))
     for i, student in enumerate(student_ordering[:num_buses]):
-        bus_assignments[i].append(student)
-        update_data(student, i, rowdy_group_to_students, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+        update_data(student, i, rowdy_group_to_students, np.zeros(shape=(num_buses, num_rowdy_groups)), fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
                         bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus)
 
     for student in student_ordering[num_buses:]:
@@ -120,14 +119,14 @@ def solve(graph, num_buses, size_bus, constraints):
         cost_matrix = floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups
         rowdy_groups_student_is_in = rowdy_group_to_students[:,student]
         cost_vector = cost_matrix @ rowdy_groups_student_is_in
-        #print(scaled_rowdy_group_to_students[6,25])
-        print(1/0)
+        heuristics = reward_vector - cost_vector
         sorted_heuristic_indices = np.argsort(-heuristics)
-        # Put student in the bus with highest heuristic while ensuring bus still has space
 
         for idx in sorted_heuristic_indices:
             load = len(bus_assignments[idx])
             if load < size_bus:
+                update_data(student, bus, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                                bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus)
                 bus_assignments[idx].append(student)
                 break
 
@@ -139,10 +138,13 @@ def solve(graph, num_buses, size_bus, constraints):
     # simulated anealing to swap for best solution
 
 # Update memoized data
-def update_data(student, bus, rowdy_group_to_students, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+def update_data(student, bus, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
                 bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus):
+    bus_assignments[bus].append(student)
     rowdy_groups_student_is_in = rowdy_group_to_students[:, student]
     fraction_of_rowdy_group_in_bus[bus,:] += scaled_rowdy_group_to_students[:, student]
+    number_of_friendships_in_bus_for_rowdy_group += friend_count_in_rgs
+    floored_fraction_of_rowdy_group_in_bus = np.floor(fraction_of_rowdy_group_in_bus)
 
 
 
