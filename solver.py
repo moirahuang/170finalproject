@@ -76,8 +76,7 @@ def solve(graph, num_buses, size_bus, constraints):
         for student_string in student_names:
             if student_string in constraints[rg_index]:
                 rowdy_group_to_students[rg_index, name_to_idx[student_string]] = 1
-        # print(rowdy_group_to_students[student_index])
-    # print(constraints)
+
     sums = np.sum(rowdy_group_to_students, axis=1)
 
     scaled_rowdy_group_to_students = rowdy_group_to_students / sums[:,None]
@@ -96,7 +95,6 @@ def solve(graph, num_buses, size_bus, constraints):
         num_friends_in_rg = np.zeros(shape=(num_rowdy_groups))
 
         additional_friendships = np.zeros(shape=(num_buses, 1), dtype=float)
-        friends_in_busses = []
         friend_count_in_rgs = np.zeros(shape=(num_buses, num_rowdy_groups))
 
         for bus in range(num_buses):
@@ -110,7 +108,6 @@ def solve(graph, num_buses, size_bus, constraints):
                         friend_count_in_rgs[bus, common_rg] += 1
                     count+=1
             additional_friendships[bus] = count
-
 
         number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[:,student_idx].reshape(1,num_rowdy_groups)
         fraction_of_rowdy_group_in_bus_temp               = fraction_of_rowdy_group_in_bus +  np.ones(shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:,student_idx].reshape(1, num_rowdy_groups)
