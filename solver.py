@@ -60,18 +60,22 @@ def solve(graph, num_buses, size_bus, constraints):
 
     # construct a dictionary mapping each person to the rowdy groups they're in
 
-    students = list(graph.nodes())
+    student_names = list(graph.nodes())
+    name_to_idx = dict()
+
+    for i, student in enumerate(student_names):
+        name_to_idx[student] = i
+
     num_rowdy_groups = len(constraints)
     bus_assignments = {}
-    min_friendships = []
     for i in range(num_buses):
         bus_assignments[i] = []
     #M
-    rowdy_group_to_students = np.zeros((len(constraints), len(students)))
+    rowdy_group_to_students = np.zeros((len(constraints), len(student_names)))
     for rg_index in range(len(constraints)):
-        for student_string in students:
+        for student_string in student_names:
             if student_string in constraints[rg_index]:
-                rowdy_group_to_students[rg_index, int(student_string)] = 1
+                rowdy_group_to_students[rg_index, name_to_idx[student_string]] = 1
         # print(rowdy_group_to_students[student_index])
     # print(constraints)
     sums = np.sum(rowdy_group_to_students, axis=1)
@@ -81,17 +85,14 @@ def solve(graph, num_buses, size_bus, constraints):
     fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups), dtype=float)
     #L
     number_of_friendships_in_bus_for_rowdy_group = np.zeros(shape=(num_buses, num_rowdy_groups), dtype=float)
-    #I
-    floored_fraction_of_rowdy_group_in_bus = np.zeros(shape=(num_buses, num_rowdy_groups), dtype=float)
-
     #sort students by number of rowdy groups they're in
     # iterate through every person
     student_ordering = np.argsort(-np.sum(rowdy_group_to_students, axis=0))
-    for i, student in enumerate(student_ordering[:num_buses]):
-        update_data(student, i, rowdy_group_to_students, np.zeros(shape=(num_buses, num_rowdy_groups)), fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
-                        bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus)
+    for i, student_idx in enumerate(student_ordering[:num_buses]):
+        update_data(student_idx, i, student_names, rowdy_group_to_students, np.zeros(shape=(num_buses, num_rowdy_groups)), fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                        bus_assignments, scaled_rowdy_group_to_students)
 
-    for student in student_ordering[num_buses:]:
+    for student_idx in student_ordering[num_buses:]:
         num_friends_in_rg = np.zeros(shape=(num_rowdy_groups))
 
         additional_friendships = np.zeros(shape=(num_buses, 1), dtype=float)
@@ -100,10 +101,10 @@ def solve(graph, num_buses, size_bus, constraints):
 
         for bus in range(num_buses):
             count = 0
-            for friend in graph.adj[students[student]]:
-                if int(friend) in bus_assignments[bus]:
-                    friend_rg = rowdy_group_to_students[:,int(friend)]
-                    student_rg = rowdy_group_to_students[:,student]
+            for friend in graph.adj[student_names[student_idx]]:
+                if name_to_idx[friend] in bus_assignments[bus]:
+                    friend_rg = rowdy_group_to_students[:,name_to_idx[friend]]
+                    student_rg = rowdy_group_to_students[:,student_idx]
                     common_rgs = np.where(friend_rg + student_rg == 2)
                     for common_rg in common_rgs:
                         friend_count_in_rgs[bus, common_rg] += 1
@@ -111,13 +112,13 @@ def solve(graph, num_buses, size_bus, constraints):
             additional_friendships[bus] = count
 
 
-        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[:,student].reshape(1,num_rowdy_groups)
-        fraction_of_rowdy_group_in_bus_temp               = fraction_of_rowdy_group_in_bus +  np.ones(shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:,student].reshape(1, num_rowdy_groups)
+        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[:,student_idx].reshape(1,num_rowdy_groups)
+        fraction_of_rowdy_group_in_bus_temp               = fraction_of_rowdy_group_in_bus +  np.ones(shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:,student_idx].reshape(1, num_rowdy_groups)
         floored_fraction_of_rowdy_group_in_bus_temp       = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
         reward_vector = additional_friendships.reshape(additional_friendships.size)
         cost_matrix = floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups
-        rowdy_groups_student_is_in = rowdy_group_to_students[:,student]
+        rowdy_groups_student_is_in = rowdy_group_to_students[:,student_idx]
         cost_vector = cost_matrix @ rowdy_groups_student_is_in
         heuristics = reward_vector - cost_vector
         sorted_heuristic_indices = np.argsort(-heuristics)
@@ -125,8 +126,8 @@ def solve(graph, num_buses, size_bus, constraints):
         for idx in sorted_heuristic_indices:
             load = len(bus_assignments[idx])
             if load < size_bus:
-                update_data(student, bus, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
-                                bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus)
+                update_data(student_idx, idx, student_names, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                                bus_assignments, scaled_rowdy_group_to_students)
                 break
 
     return dict_to_string(bus_assignments)
@@ -137,13 +138,12 @@ def solve(graph, num_buses, size_bus, constraints):
     # simulated anealing to swap for best solution
 
 # Update memoized data
-def update_data(student, bus, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
-                bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus):
-    bus_assignments[bus].append(student)
-    rowdy_groups_student_is_in = rowdy_group_to_students[:, student]
-    fraction_of_rowdy_group_in_bus[bus,:] += scaled_rowdy_group_to_students[:, student]
+def update_data(student_idx, bus_idx, student_names, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                bus_assignments, scaled_rowdy_group_to_students):
+    bus_assignments[bus_idx].append(student_names[student_idx])
+    rowdy_groups_student_is_in = rowdy_group_to_students[:, student_idx]
+    fraction_of_rowdy_group_in_bus[bus_idx,:] += scaled_rowdy_group_to_students[:, student_idx]
     number_of_friendships_in_bus_for_rowdy_group += friend_count_in_rgs
-    floored_fraction_of_rowdy_group_in_bus = np.floor(fraction_of_rowdy_group_in_bus)
 
 
 
@@ -168,9 +168,9 @@ def main():
 
         for input_folder in os.listdir(category_dir):
             # input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "1")
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "15")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + "1" + ".out", "w")
+            output_file = open(output_category_path + "/" + "15" + ".out", "w")
 
             #TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
