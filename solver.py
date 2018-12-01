@@ -127,7 +127,6 @@ def solve(graph, num_buses, size_bus, constraints):
             if load < size_bus:
                 update_data(student, bus, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
                                 bus_assignments, scaled_rowdy_group_to_students, floored_fraction_of_rowdy_group_in_bus)
-                bus_assignments[idx].append(student)
                 break
 
     return dict_to_string(bus_assignments)
