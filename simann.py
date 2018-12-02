@@ -233,7 +233,8 @@ def update_data(student_idx, bus_idx, student_names, rowdy_group_to_students, fr
                 fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
                 bus_assignments, scaled_rowdy_group_to_students):
     bus_assignments[bus_idx].append(student_names[student_idx])
-    fraction_of_rowdy_group_in_bus[bus_idx, :] += scaled_rowdy_group_to_students[:, student_idx]
+    rowdy_groups_student_is_in = rowdy_group_to_students[:, student_idx]
+    fraction_of_rowdy_group_in_bus[bus_idx,:] += np.multiply(scaled_rowdy_group_to_students[:, student_idx], rowdy_groups_student_is_in)
     number_of_friendships_in_bus_for_rowdy_group += friend_count_in_rgs
 
 
@@ -241,7 +242,8 @@ def decrease(student_idx, bus_idx, student_names, rowdy_group_to_students, frien
              fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
              bus_assignments, scaled_rowdy_group_to_students):
     bus_assignments[bus_idx].remove(student_names[student_idx])
-    fraction_of_rowdy_group_in_bus[bus_idx, :] -= scaled_rowdy_group_to_students[:, student_idx]
+    rowdy_groups_student_is_in = rowdy_group_to_students[:, student_idx]
+    fraction_of_rowdy_group_in_bus[bus_idx,:] -= np.multiply(scaled_rowdy_group_to_students[:, student_idx], rowdy_groups_student_is_in)
     number_of_friendships_in_bus_for_rowdy_group -= friend_count_in_rgs
 
 
