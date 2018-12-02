@@ -104,7 +104,7 @@ class SimulatedAnnealer(Annealer):
         for bus in self.state:
             for rowdy_group_index in range(len(self.fraction_of_rowdy_group_in_bus)):
                 if np.sum(self.fraction_of_rowdy_group_in_bus[rowdy_group_index]) == 1:
-                    for student in constraints[rowdy_group_index]:
+                    for student in self.constraints[rowdy_group_index]:
                         self.state[bus].remove(student)
         return np.sum(self.heuristic_matrix)
 
