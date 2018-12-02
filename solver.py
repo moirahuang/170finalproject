@@ -3,7 +3,6 @@ import networkx as nx
 import numpy as np
 import os
 import heapq
-from simanneal import Annealer
 
 ###########################################
 # Change this variable to the path to
@@ -45,26 +44,6 @@ def parse_input(folder_name):
         constraints.append(curr_constraint)
 
     return graph, num_buses, size_bus, constraints
-
-class SimulatedAnnealer(Annealer):
-
-    # pass extra data (the distance matrix) into the constructor
-    def __init__(self, state, heuristic_matrix):
-        self.heuristic_matrix = heuristic_matrix
-        super(SimulatedAnnealer, self).__init__(state)  # important!
-
-    def move(self):
-        """Swaps two friends in bus."""
-        a = random.randint(0, len(self.state) - 1)
-        b = random.randint(0, len(self.state) - 1)
-        self.state[a], self.state[b] = self.state[b], self.state[a]
-
-    def energy(self):
-        """Calculates the length of the route."""
-        e = 0
-        for i in range(len(self.state)):
-            e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
-        return e
 
 def dict_to_string(dict):
     result = ""
@@ -146,25 +125,8 @@ def solve(graph, num_buses, size_bus, constraints):
                                 bus_assignments, scaled_rowdy_group_to_students)
                 break
 
-    first_pass = dict_to_string(bus_assignments)
+    return dict_to_string(bus_assignments)
 
-    # create a distance matrix
-    friendships = np.zeros(shape=(num_buses, len(student_names)))
-    for bus_i in range(len(first_pass)):
-        for student in first_pass[i]:
-            for friend in graph.adj[student]:
-                if friend in first_pass[i]:
-                    count += 1
-            friendships[bus_i][name_to_idx[student]] = count
-    print(friendships)
-
-    tsp = SimulatedAnnealer(first_pass, friendships)
-    tsp.steps = 100000
-    # since our state is just a list, slice is the fastest way to copy
-    tsp.copy_strategy = "slice"
-    state, e = tsp.anneal()
-
-    return state
         #append friend to bus
     # heuristic is # of friendships created - factor * potential rowdy groups created (but make -large value if a rowdy group is created--recalculate friendships if a rowdy group has to be made)
 
@@ -187,7 +149,7 @@ def main():
         the portion which writes it to a file to make sure their output is
         formatted correctly.
     '''
-    size_categories = ["small", "medium", "large"]
+    size_categories = ["small"]
     if not os.path.isdir(path_to_outputs):
         os.mkdir(path_to_outputs)
 
@@ -200,10 +162,10 @@ def main():
             os.mkdir(output_category_path)
 
         for input_folder in os.listdir(category_dir):
-            input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
+            # input_name = os.fsdecode(input_folder)
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "5")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + input_name + ".out", "w")
+            output_file = open(output_category_path + "/" + "5" + ".out", "w")
 
             #TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
