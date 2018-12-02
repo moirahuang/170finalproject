@@ -56,7 +56,7 @@ class SimulatedAnnealer(Annealer):
     # pass extra data (the distance matrix) into the constructor
     def __init__(self, state, heuristic_matrix, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
                  name_to_idx, student_names, friend_count_in_rgs, number_of_friendships_in_bus_for_rowdy_group,
-                 bus_assignments, scaled_rowdy_group_to_students, constraints, graph):
+                 bus_assignments, scaled_rowdy_group_to_students, constraints, graph, size_bus):
         self.heuristic_matrix = heuristic_matrix
         self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
         self.rowdy_group_to_students = rowdy_group_to_students
@@ -68,42 +68,60 @@ class SimulatedAnnealer(Annealer):
         self.scaled_rowdy_group_to_students = scaled_rowdy_group_to_students
         self.constraints = constraints
         self.graph = graph
+        self.size_bus = size_bus
         super(SimulatedAnnealer, self).__init__(state)  # important!
 
     def move(self):
         """Swaps two friends in bus."""
-        # get random bus
-        a = random.randint(0, len(self.state) - 1)
-        b = random.randint(0, len(self.state) - 1)
-        # get random student
-        c = random.choice(self.state[a])
-        d = random.choice(self.state[b])
-        # the deleting breaks if they're equal so check for that
-        if c != d:
-            decrease(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
-                     self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
-                     self.state, self.scaled_rowdy_group_to_students)
-            decrease(self.name_to_idx[d], b, self.student_names,
-                     self.rowdy_group_to_students, self.friend_count_in_rgs,
-                     self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
-                     self.state, self.scaled_rowdy_group_to_students)
-            update_data(self.name_to_idx[c], b, self.student_names, self.rowdy_group_to_students,
-                        self.friend_count_in_rgs,
-                        self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
-                        self.state, self.scaled_rowdy_group_to_students)
-            update_data(self.name_to_idx[d], a, self.student_names,
-                        self.rowdy_group_to_students, self.friend_count_in_rgs,
-                        self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
-                        self.state, self.scaled_rowdy_group_to_students)
-            # do the swap (decrease and update do it)
-            # self.state[a].remove(c)
-            # self.state[b].remove(d)
-            # self.state[a].append(d)
-            # self.state[b].append(c)
+        choice = random.sample([1, 2], 1)
+        if choice == 1:
+            # get random bus
+            a = random.randint(0, len(self.state) - 1)
+            b = random.randint(0, len(self.state) - 1)
+            # get random student
+            c = random.choice(self.state[a])
+            d = random.choice(self.state[b])
+            # the deleting breaks if they're equal so check for that
+            if c != d:
+                decrease(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
+                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                         self.state, self.scaled_rowdy_group_to_students)
+                decrease(self.name_to_idx[d], b, self.student_names,
+                         self.rowdy_group_to_students, self.friend_count_in_rgs,
+                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                         self.state, self.scaled_rowdy_group_to_students)
+                update_data(self.name_to_idx[c], b, self.student_names, self.rowdy_group_to_students,
+                            self.friend_count_in_rgs,
+                            self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                            self.state, self.scaled_rowdy_group_to_students)
+                update_data(self.name_to_idx[d], a, self.student_names,
+                            self.rowdy_group_to_students, self.friend_count_in_rgs,
+                            self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                            self.state, self.scaled_rowdy_group_to_students)
+                # do the swap (decrease and update do it)
+                # self.state[a].remove(c)
+                # self.state[b].remove(d)
+                # self.state[a].append(d)
+                # self.state[b].append(c)
+        else:
+            a = random.randint(0, len(self.state) - 1)
+            b = random.randint(0, len(self.state) - 1)
+            # get random student
+            c = random.choice(self.state[a])
+            d = random.choice(self.state[b])
+            if len(self.state[a]) < self.size_bus:
+                decrease(self.name_to_idx[d], b, self.student_names,
+                         self.rowdy_group_to_students, self.friend_count_in_rgs,
+                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                         self.state, self.scaled_rowdy_group_to_students)
+                update_data(self.name_to_idx[d], a, self.student_names, self.rowdy_group_to_students,
+                            self.friend_count_in_rgs,
+                            self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                            self.state, self.scaled_rowdy_group_to_students)
 
     def energy(self):
         """Calculates the length of the route."""
-        # recalculate heuricsitc matrix
+        # recalculate heuristic matrix
         self.heuristic_matrix = np.zeros(shape=(len(self.state), len(self.student_names)))
         for bus_i in range(len(self.state)):
             for student in self.state[bus_i]:
@@ -220,7 +238,7 @@ def solve(graph, num_buses, size_bus, constraints):
     tsp = SimulatedAnnealer(bus_assignments, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
                             name_to_idx, student_names, friend_count_in_rgs,
                             number_of_friendships_in_bus_for_rowdy_group, bus_assignments,
-                            scaled_rowdy_group_to_students, constraints, graph)
+                            scaled_rowdy_group_to_students, constraints, graph, size_bus)
     tsp.steps = 10000
     # since our state is just a list, slice is the fastest way to copy
     # tsp.copy_strategy = "slice"
@@ -254,7 +272,7 @@ def main():
         the portion which writes it to a file to make sure their output is
         formatted correctly.
     '''
-    size_categories = ["small", "medium", "large"]
+    size_categories = ["small"]
     if not os.path.isdir(path_to_outputs):
         os.mkdir(path_to_outputs)
 
@@ -268,9 +286,9 @@ def main():
 
         for input_folder in os.listdir(category_dir):
             input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "15")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + input_name + ".out", "w")
+            output_file = open(output_category_path + "/" + "15" + ".out", "w")
 
             # TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
