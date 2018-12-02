@@ -252,7 +252,7 @@ def main():
         the portion which writes it to a file to make sure their output is
         formatted correctly.
     '''
-    size_categories = ["small"]
+    size_categories = ["small", "medium", "large"]
     if not os.path.isdir(path_to_outputs):
         os.mkdir(path_to_outputs)
 
@@ -266,9 +266,9 @@ def main():
 
         for input_folder in os.listdir(category_dir):
             input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "15")
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + "15" + ".out", "w")
+            output_file = open(output_category_path + "/" + input_name + ".out", "w")
 
             # TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
