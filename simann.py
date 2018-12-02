@@ -118,8 +118,8 @@ class SimulatedAnnealer(Annealer):
                 # if rowdy group exists
                 if np.sum(self.fraction_of_rowdy_group_in_bus[rowdy_group_index]) == 1:
                     # get that rowdy group's students and remove their friendships
-                    for student_i in range(len(self.constraints[rowdy_group_index])):
-                        self.heuristic_matrix[bus_i][student_i] = 0
+                    for student in range(len(self.constraints[rowdy_group_index])):
+                        self.heuristic_matrix[bus_i][self.name_to_idx] = 0
         return np.sum(self.heuristic_matrix)
 
 
