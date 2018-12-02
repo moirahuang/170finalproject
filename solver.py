@@ -200,17 +200,10 @@ def main():
             os.mkdir(output_category_path)
 
         for input_folder in os.listdir(category_dir):
-<<<<<<< HEAD
-            # input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "5")
-            solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + "5" + ".out", "w")
-=======
             input_name = os.fsdecode(input_folder)
             graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
             solution = solve(graph, num_buses, size_bus, constraints)
             output_file = open(output_category_path + "/" + input_name + ".out", "w")
->>>>>>> 6da1f925b301c6a0b8a7cbd40b88529e59e8bf0e
 
             #TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
