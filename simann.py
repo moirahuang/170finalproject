@@ -87,11 +87,11 @@ class SimulatedAnnealer(Annealer):
                      self.rowdy_group_to_students, self.friend_count_in_rgs,
                      self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
                      self.state, self.scaled_rowdy_group_to_students)
-            update_data(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students,
+            update_data(self.name_to_idx[c], b, self.student_names, self.rowdy_group_to_students,
                         self.friend_count_in_rgs,
                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
                         self.state, self.scaled_rowdy_group_to_students)
-            update_data(self.name_to_idx[d], b, self.student_names,
+            update_data(self.name_to_idx[d], a, self.student_names,
                         self.rowdy_group_to_students, self.friend_count_in_rgs,
                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
                         self.state, self.scaled_rowdy_group_to_students)
