@@ -52,35 +52,56 @@ def parse_input(folder_name):
 class SimulatedAnnealer(Annealer):
 
     # pass extra data (the distance matrix) into the constructor
-    def __init__(self, state, heuristic_matrix, fraction_of_rowdy_group_in_bus, rowdy_group_to_students):
+    def __init__(self, state, heuristic_matrix, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
+                 name_to_idx, student_names, friend_count_in_rgs, number_of_friendships_in_bus_for_rowdy_group, bus_assignments, scaled_rowdy_group_to_students):
         self.heuristic_matrix = heuristic_matrix
         self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
         self.rowdy_group_to_students = rowdy_group_to_students
+        self.name_to_idx = name_to_idx
+        self.student_names = student_names
+        self.friend_count_in_rgs = friend_count_in_rgs
+        self.number_of_friendships_in_bus_for_rowdy_group = number_of_friendships_in_bus_for_rowdy_group
+        self.bus_assignments = bus_assignments
+        self.scaled_rowdy_group_to_students = scaled_rowdy_group_to_students
         super(SimulatedAnnealer, self).__init__(state)  # important!
 
     def move(self):
         """Swaps two friends in bus."""
-        a = random.randint(0, len(self.state) - 1)
-        b = random.randint(0, len(self.state) - 1)
-        c = random.randint(0, len(self.state[a]) - 1)
-        d = random.randint(0, len(self.state[b]) - 1)
-        self.state[a][c], self.state[b][d] = self.state[b][d], self.state[a][c]
-        update_data(student_idx, idx, student_names, rowdy_group_to_students, friend_count_in_rgs,
-                    fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
-                    bus_assignments, scaled_rowdy_group_to_students)
+        a = random.choice(list(self.state.keys()))
+        b = random.choice(list(self.state.keys()))
+        c = random.choice(self.state[a])
+        d = random.choice(self.state[b])
+        if c != d:
+            decrease(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
+                        self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                        self.state, self.scaled_rowdy_group_to_students)
+            decrease(self.name_to_idx[d], b, self.student_names,
+                     self.rowdy_group_to_students, self.friend_count_in_rgs,
+                     self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                     self.state, self.scaled_rowdy_group_to_students)
+            update_data(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
+                        self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                        self.state, self.scaled_rowdy_group_to_students)
+            update_data(self.name_to_idx[d], b, self.student_names,
+                        self.rowdy_group_to_students, self.friend_count_in_rgs,
+                        self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
+                        self.state, self.scaled_rowdy_group_to_students)
+            self.state[a].remove(c)
+            self.state[b].remove(d)
+            self.state[a].append(d)
+            self.state[b].append(c)
 
 
-    def energy(self, fraction_):
+    def energy(self):
         """Calculates the length of the route."""
         # e = 0
         # for i in range(len(self.state)):
         #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
         for bus in self.state:
             for rowdy_group in self.fraction_of_rowdy_group_in_bus:
-                if self.fraction_of_rowdy_group_in_bus[rowdy_group] == 1:
+                if np.sum(rowdy_group) == 1:
                     for student in self.rowdy_group_to_students[rowdy_group]:
                         self.state[bus].remove(student)
-
         return np.sum(self.heuristic_matrix)
 
 def dict_to_string(dict):
@@ -168,13 +189,13 @@ def solve(graph, num_buses, size_bus, constraints):
     friendships = np.zeros(shape=(num_buses, len(student_names)))
     for bus_i in range(num_buses):
         for student in first_pass[i]:
-            print(student)
             for friend in graph.adj[student]:
                 if friend in first_pass[i]:
                     count += 1
             friendships[bus_i][name_to_idx[student]] = count
-    tsp = SimulatedAnnealer(first_pass, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students)
-    tsp.steps = 100000
+    tsp = SimulatedAnnealer(first_pass, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
+                 name_to_idx, student_names, friend_count_in_rgs, number_of_friendships_in_bus_for_rowdy_group, bus_assignments, scaled_rowdy_group_to_students)
+    tsp.steps = 10000
     # since our state is just a list, slice is the fastest way to copy
     # tsp.copy_strategy = "slice"
     state, e = tsp.anneal()
@@ -184,9 +205,14 @@ def solve(graph, num_buses, size_bus, constraints):
 def update_data(student_idx, bus_idx, student_names, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
                 bus_assignments, scaled_rowdy_group_to_students):
     bus_assignments[bus_idx].append(student_names[student_idx])
-    rowdy_groups_student_is_in = rowdy_group_to_students[:, student_idx]
     fraction_of_rowdy_group_in_bus[bus_idx,:] += scaled_rowdy_group_to_students[:, student_idx]
     number_of_friendships_in_bus_for_rowdy_group += friend_count_in_rgs
+
+def decrease(student_idx, bus_idx, student_names, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                bus_assignments, scaled_rowdy_group_to_students):
+    bus_assignments[bus_idx].remove(student_names[student_idx])
+    fraction_of_rowdy_group_in_bus[bus_idx,:] -= scaled_rowdy_group_to_students[:, student_idx]
+    number_of_friendships_in_bus_for_rowdy_group -= friend_count_in_rgs
 
 
 
