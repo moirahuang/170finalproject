@@ -92,15 +92,13 @@ def solve(graph, num_buses, size_bus, constraints):
                         bus_assignments, scaled_rowdy_group_to_students)
 
     for student_idx in student_ordering[num_buses:]:
-        num_friends_in_rg = np.zeros(shape=(num_rowdy_groups))
-
         additional_friendships = np.zeros(shape=(num_buses, 1), dtype=float)
         friend_count_in_rgs = np.zeros(shape=(num_buses, num_rowdy_groups))
 
         for bus in range(num_buses):
             count = 0
             for friend in graph.adj[student_names[student_idx]]:
-                if name_to_idx[friend] in bus_assignments[bus]:
+                if friend in bus_assignments[bus]:
                     friend_rg = rowdy_group_to_students[:,name_to_idx[friend]]
                     student_rg = rowdy_group_to_students[:,student_idx]
                     common_rgs = np.where(friend_rg + student_rg == 2)
@@ -114,7 +112,7 @@ def solve(graph, num_buses, size_bus, constraints):
         floored_fraction_of_rowdy_group_in_bus_temp       = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
         reward_vector = additional_friendships.reshape(additional_friendships.size)
-        cost_matrix = floored_fraction_of_rowdy_group_in_bus_temp + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups
+        cost_matrix = np.multiply(floored_fraction_of_rowdy_group_in_bus_temp, number_of_friendships_in_bus_for_rowdy_group_temp) + fraction_of_rowdy_group_in_bus_temp / num_rowdy_groups
         rowdy_groups_student_is_in = rowdy_group_to_students[:,student_idx]
         cost_vector = cost_matrix @ rowdy_groups_student_is_in
         heuristics = reward_vector - cost_vector
@@ -165,9 +163,9 @@ def main():
 
         for input_folder in os.listdir(category_dir):
             # input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "15")
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "5")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + "15" + ".out", "w")
+            output_file = open(output_category_path + "/" + "5" + ".out", "w")
 
             #TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
