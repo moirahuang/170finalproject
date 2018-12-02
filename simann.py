@@ -56,7 +56,7 @@ class SimulatedAnnealer(Annealer):
     # pass extra data (the distance matrix) into the constructor
     def __init__(self, state, heuristic_matrix, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
                  name_to_idx, student_names, friend_count_in_rgs, number_of_friendships_in_bus_for_rowdy_group,
-                 bus_assignments, scaled_rowdy_group_to_students, constraints):
+                 bus_assignments, scaled_rowdy_group_to_students, constraints, graph):
         self.heuristic_matrix = heuristic_matrix
         self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
         self.rowdy_group_to_students = rowdy_group_to_students
@@ -67,6 +67,7 @@ class SimulatedAnnealer(Annealer):
         self.bus_assignments = bus_assignments
         self.scaled_rowdy_group_to_students = scaled_rowdy_group_to_students
         self.constraints = constraints
+        self.graph = graph
         super(SimulatedAnnealer, self).__init__(state)  # important!
 
     def move(self):
@@ -104,6 +105,14 @@ class SimulatedAnnealer(Annealer):
         # e = 0
         # for i in range(len(self.state)):
         #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
+        self.heuristic_matrix = np.zeros(shape=(len(self.state), len(self.student_names)))
+        for bus_i in range(len(self.state)):
+            for student in self.state[bus_i]:
+                count = 0
+                for friend in self.graph.adj[student]:
+                    if friend in self.state[bus_i]:
+                        count += 1
+                self.heuristic_matrix[bus_i, self.name_to_idx[student]] = count
         for bus_i in range(len(self.state)):
             for rowdy_group_index in range(len(self.fraction_of_rowdy_group_in_bus)):
                 #if rowdy group exists
@@ -215,7 +224,7 @@ def solve(graph, num_buses, size_bus, constraints):
     tsp = SimulatedAnnealer(bus_assignments, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
                             name_to_idx, student_names, friend_count_in_rgs,
                             number_of_friendships_in_bus_for_rowdy_group, bus_assignments,
-                            scaled_rowdy_group_to_students, constraints)
+                            scaled_rowdy_group_to_students, constraints, graph)
     tsp.steps = 10000
     # since our state is just a list, slice is the fastest way to copy
     # tsp.copy_strategy = "slice"
