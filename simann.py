@@ -1,11 +1,11 @@
 from __future__ import print_function
+
+import os
+import random
+
 import networkx as nx
 # import cvxpy
 import numpy as np
-import os
-import heapq
-import math
-import random
 from simanneal import Annealer
 
 ###########################################
@@ -72,13 +72,13 @@ class SimulatedAnnealer(Annealer):
 
     def move(self):
         """Swaps two friends in bus."""
-        #get random bus
+        # get random bus
         a = random.choice(list(self.state.keys()))
         b = random.choice(list(self.state.keys()))
-        #get random student
+        # get random student
         c = random.choice(self.state[a])
         d = random.choice(self.state[b])
-        #the deleting breaks if they're equal so check for that
+        # the deleting breaks if they're equal so check for that
         if c != d:
             decrease(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
                      self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
@@ -95,7 +95,7 @@ class SimulatedAnnealer(Annealer):
                         self.rowdy_group_to_students, self.friend_count_in_rgs,
                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
                         self.state, self.scaled_rowdy_group_to_students)
-            #do the swap
+            # do the swap
             self.state[a].remove(c)
             self.state[b].remove(d)
             self.state[a].append(d)
@@ -112,12 +112,12 @@ class SimulatedAnnealer(Annealer):
                     if friend in self.state[bus_i]:
                         count += 1
                 self.heuristic_matrix[bus_i, self.name_to_idx[student]] = count
-        #remove all complete rowdy groups
+        # remove all complete rowdy groups
         for bus_i in range(len(self.state)):
             for rowdy_group_index in range(len(self.fraction_of_rowdy_group_in_bus)):
-                #if rowdy group exists
+                # if rowdy group exists
                 if np.sum(self.fraction_of_rowdy_group_in_bus[rowdy_group_index]) == 1:
-                    #get that rowdy group's students and remove their friendships
+                    # get that rowdy group's students and remove their friendships
                     for student_i in range(len(self.constraints[rowdy_group_index])):
                         self.heuristic_matrix[bus_i][student_i] = 0
         return np.sum(self.heuristic_matrix)
@@ -188,13 +188,8 @@ def solve(graph, num_buses, size_bus, constraints):
                     count += 1
             additional_friendships[bus] = count
 
-        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[
-                                                                                                                                    :,
-                                                                                                                                    student_idx].reshape(
-            1, num_rowdy_groups)
-        fraction_of_rowdy_group_in_bus_temp = fraction_of_rowdy_group_in_bus + np.ones(
-            shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:, student_idx].reshape(1,
-                                                                                                         num_rowdy_groups)
+        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[:,student_idx].reshape(1, num_rowdy_groups)
+        fraction_of_rowdy_group_in_bus_temp = fraction_of_rowdy_group_in_bus + np.ones(shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:, student_idx].reshape(1,num_rowdy_groups)
         floored_fraction_of_rowdy_group_in_bus_temp = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
         reward_vector = additional_friendships.reshape(additional_friendships.size)
