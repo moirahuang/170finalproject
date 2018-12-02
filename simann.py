@@ -73,8 +73,10 @@ class SimulatedAnnealer(Annealer):
         """Swaps two friends in bus."""
         a = random.choice(list(self.state.keys()))
         b = random.choice(list(self.state.keys()))
+        #get random student
         c = random.choice(self.state[a])
         d = random.choice(self.state[b])
+        #the deleting breaks if they're equal so check for that
         if c != d:
             decrease(self.name_to_idx[c], a, self.student_names, self.rowdy_group_to_students, self.friend_count_in_rgs,
                      self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
@@ -91,6 +93,7 @@ class SimulatedAnnealer(Annealer):
                         self.rowdy_group_to_students, self.friend_count_in_rgs,
                         self.fraction_of_rowdy_group_in_bus, self.number_of_friendships_in_bus_for_rowdy_group,
                         self.state, self.scaled_rowdy_group_to_students)
+            #do the swap
             self.state[a].remove(c)
             self.state[b].remove(d)
             self.state[a].append(d)
@@ -103,9 +106,12 @@ class SimulatedAnnealer(Annealer):
         #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
         for bus_i in range(len(self.state)):
             for rowdy_group_index in range(len(self.fraction_of_rowdy_group_in_bus)):
+                #if rowdy group exists
                 if np.sum(self.fraction_of_rowdy_group_in_bus[rowdy_group_index]) == 1:
+                    #get that rowdy group's students and remove their friendships
                     for student_i in range(len(self.constraints[rowdy_group_index])):
                         self.heuristic_matrix[bus_i][student_i] = 0
+
         return np.sum(self.heuristic_matrix)
 
 
@@ -196,16 +202,17 @@ def solve(graph, num_buses, size_bus, constraints):
                             bus_assignments, scaled_rowdy_group_to_students)
                 break
 
-    first_pass = bus_assignments
-    # create a distance matrix
+    # create a matrix mapping a student's number of friends in the bus they're in
     friendships = np.zeros(shape=(num_buses, len(student_names)))
     for bus_i in range(num_buses):
-        for student in first_pass[i]:
+        for student in bus_assignments[bus_i]:
+            count = 0
             for friend in graph.adj[student]:
-                if friend in first_pass[i]:
+                if friend in bus_assignments[bus_i]:
                     count += 1
-            friendships[bus_i][name_to_idx[student]] = count
-    tsp = SimulatedAnnealer(first_pass, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
+            friendships[bus_i, name_to_idx[student]] = count
+            print(friendships)
+    tsp = SimulatedAnnealer(bus_assignments, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students,
                             name_to_idx, student_names, friend_count_in_rgs,
                             number_of_friendships_in_bus_for_rowdy_group, bus_assignments,
                             scaled_rowdy_group_to_students, constraints)
@@ -240,7 +247,7 @@ def main():
         the portion which writes it to a file to make sure their output is
         formatted correctly.
     '''
-    size_categories = ["small", "medium", "large"]
+    size_categories = ["small"]
     if not os.path.isdir(path_to_outputs):
         os.mkdir(path_to_outputs)
 
@@ -254,9 +261,9 @@ def main():
 
         for input_folder in os.listdir(category_dir):
             input_name = os.fsdecode(input_folder)
-            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + input_name)
+            graph, num_buses, size_bus, constraints = parse_input(category_path + "/" + "1")
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(output_category_path + "/" + input_name + ".out", "w")
+            output_file = open(output_category_path + "/" + "1" + ".out", "w")
 
             # TODO: modify this to write your solution to your
             #      file properly as it might not be correct to
