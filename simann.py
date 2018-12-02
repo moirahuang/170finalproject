@@ -188,10 +188,13 @@ def solve(graph, num_buses, size_bus, constraints):
                     count += 1
             additional_friendships[bus] = count
 
-        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group \
-                                                            + additional_friendships @ rowdy_group_to_students[:, student_idx].reshape(1, num_rowdy_groups)
+        number_of_friendships_in_bus_for_rowdy_group_temp = number_of_friendships_in_bus_for_rowdy_group + additional_friendships @ rowdy_group_to_students[
+                                                                                                                                    :,
+                                                                                                                                    student_idx].reshape(
+            1, num_rowdy_groups)
         fraction_of_rowdy_group_in_bus_temp = fraction_of_rowdy_group_in_bus + np.ones(
-            shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:, student_idx].reshape(1,num_rowdy_groups)
+            shape=additional_friendships.shape) @ scaled_rowdy_group_to_students[:, student_idx].reshape(1,
+                                                                                                         num_rowdy_groups)
         floored_fraction_of_rowdy_group_in_bus_temp = np.floor(fraction_of_rowdy_group_in_bus_temp)
 
         reward_vector = additional_friendships.reshape(additional_friendships.size)
