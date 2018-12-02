@@ -52,21 +52,35 @@ def parse_input(folder_name):
 class SimulatedAnnealer(Annealer):
 
     # pass extra data (the distance matrix) into the constructor
-    def __init__(self, state, heuristic_matrix):
+    def __init__(self, state, heuristic_matrix, fraction_of_rowdy_group_in_bus, rowdy_group_to_students):
         self.heuristic_matrix = heuristic_matrix
+        self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
+        self.rowdy_group_to_students = rowdy_group_to_students
         super(SimulatedAnnealer, self).__init__(state)  # important!
 
     def move(self):
         """Swaps two friends in bus."""
         a = random.randint(0, len(self.state) - 1)
         b = random.randint(0, len(self.state) - 1)
-        self.state[a], self.state[b] = self.state[b], self.state[a]
+        c = random.randint(0, len(self.state[a]) - 1)
+        d = random.randint(0, len(self.state[b]) - 1)
+        self.state[a][c], self.state[b][d] = self.state[b][d], self.state[a][c]
+        update_data(student_idx, idx, student_names, rowdy_group_to_students, friend_count_in_rgs,
+                    fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
+                    bus_assignments, scaled_rowdy_group_to_students)
 
-    def energy(self):
+
+    def energy(self, fraction_):
         """Calculates the length of the route."""
         # e = 0
         # for i in range(len(self.state)):
         #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
+        for bus in self.state:
+            for rowdy_group in self.fraction_of_rowdy_group_in_bus:
+                if self.fraction_of_rowdy_group_in_bus[rowdy_group] == 1:
+                    for student in self.rowdy_group_to_students[rowdy_group]:
+                        self.state[bus].remove(student)
+
         return np.sum(self.heuristic_matrix)
 
 def dict_to_string(dict):
@@ -150,7 +164,6 @@ def solve(graph, num_buses, size_bus, constraints):
                 break
 
     first_pass = bus_assignments
-    print(first_pass)
     # create a distance matrix
     friendships = np.zeros(shape=(num_buses, len(student_names)))
     for bus_i in range(num_buses):
@@ -160,9 +173,7 @@ def solve(graph, num_buses, size_bus, constraints):
                 if friend in first_pass[i]:
                     count += 1
             friendships[bus_i][name_to_idx[student]] = count
-    print(friendships)
-
-    tsp = SimulatedAnnealer(first_pass, friendships)
+    tsp = SimulatedAnnealer(first_pass, friendships, fraction_of_rowdy_group_in_bus, rowdy_group_to_students)
     tsp.steps = 100000
     # since our state is just a list, slice is the fastest way to copy
     # tsp.copy_strategy = "slice"
