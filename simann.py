@@ -72,6 +72,7 @@ class SimulatedAnnealer(Annealer):
 
     def move(self):
         """Swaps two friends in bus."""
+        #get random bus
         a = random.choice(list(self.state.keys()))
         b = random.choice(list(self.state.keys()))
         #get random student
@@ -102,9 +103,7 @@ class SimulatedAnnealer(Annealer):
 
     def energy(self):
         """Calculates the length of the route."""
-        # e = 0
-        # for i in range(len(self.state)):
-        #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
+        # recalculate heuricsitc matrix
         self.heuristic_matrix = np.zeros(shape=(len(self.state), len(self.student_names)))
         for bus_i in range(len(self.state)):
             for student in self.state[bus_i]:
@@ -113,6 +112,7 @@ class SimulatedAnnealer(Annealer):
                     if friend in self.state[bus_i]:
                         count += 1
                 self.heuristic_matrix[bus_i, self.name_to_idx[student]] = count
+        #remove all complete rowdy groups
         for bus_i in range(len(self.state)):
             for rowdy_group_index in range(len(self.fraction_of_rowdy_group_in_bus)):
                 #if rowdy group exists
@@ -120,7 +120,6 @@ class SimulatedAnnealer(Annealer):
                     #get that rowdy group's students and remove their friendships
                     for student_i in range(len(self.constraints[rowdy_group_index])):
                         self.heuristic_matrix[bus_i][student_i] = 0
-
         return np.sum(self.heuristic_matrix)
 
 
