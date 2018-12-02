@@ -1,3 +1,4 @@
+from __future__ import print_function
 import networkx as nx
 # import cvxpy
 import numpy as np
@@ -63,10 +64,10 @@ class SimulatedAnnealer(Annealer):
 
     def energy(self):
         """Calculates the length of the route."""
-        e = 0
-        for i in range(len(self.state)):
-            e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
-        return e
+        # e = 0
+        # for i in range(len(self.state)):
+        #     e += self.heuristic_matrix[self.state[i-1]][self.state[i]]
+        return np.sum(self.heuristic_matrix)
 
 def dict_to_string(dict):
     result = ""
@@ -115,8 +116,6 @@ def solve(graph, num_buses, size_bus, constraints):
                         bus_assignments, scaled_rowdy_group_to_students)
 
     for student_idx in student_ordering[num_buses:]:
-        num_friends_in_rg = np.zeros(shape=(num_rowdy_groups))
-
         additional_friendships = np.zeros(shape=(num_buses, 1), dtype=float)
         friend_count_in_rgs = np.zeros(shape=(num_buses, num_rowdy_groups))
 
@@ -150,12 +149,13 @@ def solve(graph, num_buses, size_bus, constraints):
                                 bus_assignments, scaled_rowdy_group_to_students)
                 break
 
-    first_pass = dict_to_string(bus_assignments)
-
+    first_pass = bus_assignments
+    print(first_pass)
     # create a distance matrix
     friendships = np.zeros(shape=(num_buses, len(student_names)))
-    for bus_i in range(len(first_pass)):
+    for bus_i in range(num_buses):
         for student in first_pass[i]:
+            print(student)
             for friend in graph.adj[student]:
                 if friend in first_pass[i]:
                     count += 1
@@ -165,14 +165,9 @@ def solve(graph, num_buses, size_bus, constraints):
     tsp = SimulatedAnnealer(first_pass, friendships)
     tsp.steps = 100000
     # since our state is just a list, slice is the fastest way to copy
-    tsp.copy_strategy = "slice"
+    # tsp.copy_strategy = "slice"
     state, e = tsp.anneal()
-
-    return state
-        #append friend to bus
-    # heuristic is # of friendships created - factor * potential rowdy groups created (but make -large value if a rowdy group is created--recalculate friendships if a rowdy group has to be made)
-
-    # simulated anealing to swap for best solution
+    return dict_to_string(state)
 
 # Update memoized data
 def update_data(student_idx, bus_idx, student_names, rowdy_group_to_students, friend_count_in_rgs, fraction_of_rowdy_group_in_bus, number_of_friendships_in_bus_for_rowdy_group,
