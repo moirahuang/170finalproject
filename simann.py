@@ -90,7 +90,6 @@ class SimulatedAnnealer(Annealer):
 
     def move(self):
         action = np.random.choice(self.actions, 1, p=[0.5, 0.3, 0.2])
-        print(action[0])
         action[0]()
 
     def transfer(self):
@@ -115,7 +114,7 @@ class SimulatedAnnealer(Annealer):
                 bus_received_in = feasible_buses_to_accept_transfer[np.random.randint(low=0, high=len(feasible_buses_to_accept_transfer))]
 
                 try:
-                    self.move_student_and_update_memo(student_name, bus_sent_from, bus_received_in)
+                    self.move_student_and_update_memo(student_name, self.bus_assignments.index(bus_sent_from), self.buss_assignments.index(bus_received_in))
 
                     if len(self.state[bus_sent_from]) == 1:
                         self.buses_not_filled_minimally.remove(bus_sent_from)
@@ -153,7 +152,7 @@ class SimulatedAnnealer(Annealer):
                 for i in range(2):
                     bus_sent_from = buses[i]
                     bus_received_in = buses[1 - i]
-                    self.move_student_and_update_memo(student_names[i], bus_sent_from, bus_received_in)
+                    self.move_student_and_update_memo(student_names[i], i, 1-i)
         except:
             pass
 
@@ -167,7 +166,7 @@ class SimulatedAnnealer(Annealer):
             bus_sent_from = buses[i]
             bus_received_in = buses[permutation[i]]
             try:
-                self.move_student_and_update_memo(student_names[i], bus_sent_from, bus_received_in)
+                self.move_student_and_update_memo(student_names[i], i, permutation[i])
             except:
                 pass
 
