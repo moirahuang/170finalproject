@@ -89,7 +89,7 @@ class SimulatedAnnealer(Annealer):
         self.cummulative_action_probabilities = np.cumsum(self.action_probabilities)
 
     def move(self):
-        action = np.random.choice(self.actions)
+        action = np.random.choicechoice(self.actions, 1, p=[0.5, 0.3, 0.2])
         # print(action)
         action()
 
