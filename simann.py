@@ -55,13 +55,12 @@ def parse_input(folder_name):
 class SimulatedAnnealer(Annealer):
 
     # pass extra data (the distance matrix) into the constructor
-    def __init__(self, bus_assignments, friendships_in_bus_for_student, fraction_of_rowdy_group_in_bus, rowdy_group_student_membership_matrix, name_to_index, student_names, friend_count_in_rgs, number_of_friendships_in_bus_for_rowdy_group, scaled_rowdy_group_student_membership_matrix, constraints, size_bus, graph):
+    def __init__(self, bus_assignments, friendships_in_bus_for_student, fraction_of_rowdy_group_in_bus, rowdy_group_student_membership_matrix, name_to_index, student_names,  number_of_friendships_in_bus_for_rowdy_group, scaled_rowdy_group_student_membership_matrix, constraints, size_bus, graph):
         self.friendships_in_bus_for_student = friendships_in_bus_for_student
         self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
         self.rowdy_group_student_membership_matrix = rowdy_group_student_membership_matrix
         self.name_to_index = name_to_index
         self.student_names = student_names
-        self.friend_count_in_rgs = friend_count_in_rgs
         self.number_of_friendships_in_bus_for_rowdy_group = number_of_friendships_in_bus_for_rowdy_group
         self.bus_assignments = bus_assignments
         self.student_assignments = {}
@@ -320,7 +319,7 @@ def solve(graph, num_buses, size_bus, constraints):
                     friendships_in_bus_for_student[name_to_index[student]][bus].append(name_to_index[friend])
 
     tsp = SimulatedAnnealer(bus_assignments, friendships_in_bus_for_student, fraction_of_rowdy_group_in_bus, rowdy_group_student_membership_matrix,
-                            name_to_index, student_names, friend_count_in_rgs,
+                            name_to_index, student_names,
                             number_of_friendships_in_bus_for_rowdy_group,
                             scaled_rowdy_group_student_membership_matrix, constraints, size_bus, graph)
 
