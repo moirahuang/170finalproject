@@ -89,7 +89,7 @@ class SimulatedAnnealer(Annealer):
         self.cummulative_action_probabilities = np.cumsum(self.action_probabilities)
 
     def move(self):
-        action = np.random.choicechoice(self.actions, 1, p=[0.5, 0.3, 0.2])
+        action = np.random.choice(self.actions, 1, p=[0.5, 0.3, 0.2])
         # print(action)
         action()
 
@@ -172,12 +172,11 @@ class SimulatedAnnealer(Annealer):
                 pass
 
     def move_student_and_update_memo(self, student_name, bus_sent_from, bus_received_in):
-        student_index = -1
         student_index = self.name_to_index[student_name]
         # move student
         try:
-            self.state[bus_sent_from].remove(str(student_index))
-            self.state[bus_received_in].append(str(student_index))
+            self.state[bus_sent_from].remove(student_name)
+            self.state[bus_received_in].append(student_name)
             self.student_assignments[student_index] = bus_received_in
             # update memo
             rowdy_groups_student_is_in = self.rowdy_group_student_membership_matrix[:, student_index]
