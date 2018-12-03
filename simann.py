@@ -114,7 +114,7 @@ class SimulatedAnnealer(Annealer):
                 bus_received_in = feasible_buses_to_accept_transfer[np.random.randint(low=0, high=len(feasible_buses_to_accept_transfer))]
 
                 try:
-                    self.move_student_and_update_memo(student_name, self.bus_assignments.index(bus_sent_from), self.buss_assignments.index(bus_received_in))
+                    self.move_student_and_update_memo(student_name, self.bus_assignments.index(bus_sent_from), self.bus_assignments.index(bus_received_in))
 
                     if len(self.state[bus_sent_from]) == 1:
                         self.buses_not_filled_minimally.remove(bus_sent_from)
@@ -174,8 +174,8 @@ class SimulatedAnnealer(Annealer):
         student_index = self.name_to_index[student_name]
         # move student
         try:
-            self.state[bus_sent_from].remove(student_name)
-            self.state[bus_received_in].append(student_name)
+            self.state[self.bus_assignments[bus_sent_from]].remove(student_name)
+            self.state[self.bus_assignments[bus_received_in]].append(student_name)
             self.student_assignments[student_index] = bus_received_in
             # update memo
             rowdy_groups_student_is_in = self.rowdy_group_student_membership_matrix[:, student_index]
