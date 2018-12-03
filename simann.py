@@ -148,7 +148,7 @@ class SimulatedAnnealer(Annealer):
                 for i in range(2):
                     bus_sent_from = buses[i]
                     bus_received_in = buses[1 - i]
-                    self.move_student_and_update_memo(student_name[i], bus_sent_from, bus_received_in)
+                    self.move_student_and_update_memo(student_names[i], bus_sent_from, bus_received_in)
         except:
             pass
 
