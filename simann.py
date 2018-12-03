@@ -55,7 +55,10 @@ def parse_input(folder_name):
 class SimulatedAnnealer(Annealer):
 
     # pass extra data (the distance matrix) into the constructor
-    def __init__(self, bus_assignments, friendships_in_bus_for_student, fraction_of_rowdy_group_in_bus, rowdy_group_student_membership_matrix, name_to_index, student_names,  number_of_friendships_in_bus_for_rowdy_group, scaled_rowdy_group_student_membership_matrix, constraints, size_bus, graph):
+    def __init__(self, bus_assignments, friendships_in_bus_for_student, fraction_of_rowdy_group_in_bus,
+                 rowdy_group_student_membership_matrix, name_to_index, student_names,
+                 number_of_friendships_in_bus_for_rowdy_group, scaled_rowdy_group_student_membership_matrix,
+                 constraints, size_bus, graph):
         self.friendships_in_bus_for_student = friendships_in_bus_for_student
         self.fraction_of_rowdy_group_in_bus = fraction_of_rowdy_group_in_bus
         self.rowdy_group_student_membership_matrix = rowdy_group_student_membership_matrix
@@ -77,15 +80,17 @@ class SimulatedAnnealer(Annealer):
         self.buses_not_filled_minimally = list(filter(lambda key: len(bus_assignments[key]) > 1, self.bus_assignments.keys()))
         self.buses_not_filled_maximally = list(filter(lambda key: len(bus_assignments[key]) < size_bus , self.bus_assignments.keys()))
 
-        self.max_energy = np.sum([len(self.friendships_in_bus_for_student[self.name_to_index[student_name]]) for student_name in self.student_names])
-        self.Tmax       = 3 * self.energy()
+        self.max_energy = np.sum([len(self.friendships_in_bus_for_student[self.name_to_index[student_name]])
+                                  for student_name in self.student_names])
+        self.Tmax = 3 * self.energy()
 
         self.actions = [self.transfer, self.swap, self.permutation]
         self.action_probabilities = [0.5, 0.3, 0.2]
         self.cummulative_action_probabilities = np.cumsum(self.action_probabilities)
 
     def move(self):
-        action = self.actions[np.argmin(self.cummulative_action_probabilities >= np.random.sample())]
+        action = np.random.choice(self.actions)
+        # print(action)
         action()
 
     def transfer(self):
@@ -133,9 +138,9 @@ class SimulatedAnnealer(Annealer):
         buses = [-1, -1]
         num_attempts = 10 # infinite loop catch in case all buses are minimally filled
         while (student_names[0] == '' or student_names[1] == '') and num_attempts > 0:
-            student_names[0] = self.student_names[np.random.sample(self.student_names)]
-            student_names[1] = self.student_names[np.random.sample(self.student_names)]
-            buses = list(map(lambda student_name: self.student_assignments[self.name_to_index[student_name]]))
+            student_names[0] = np.random.choice(self.student_names)
+            student_names[1] = np.random.choice(self.student_names)
+            buses = list(map(lambda student_name: self.student_assignments[self.name_to_index[student_name]], student_names))
             if student_names[0] == student_names[1] or buses[0] == buses[1]:
                 student_names = ['', '']
             num_attempts -= 1
@@ -212,7 +217,6 @@ class SimulatedAnnealer(Annealer):
         # nullify all friendships of students for which
         # at least one of the students belongs to a rowdy group
         # which is fully present in the students' bus
-        count = 0
         number_friendships_per_student = np.zeros(len(self.student_names))
         removed_rowdy_groups = np.where(self.fraction_of_rowdy_group_in_bus == 1)[1].tolist()
         removed_students = []
