@@ -355,7 +355,7 @@ def main():
         the portion which writes it to a file to make sure their output is
         formatted correctly.
     '''
-    size_categories = ["small"]
+    size_categories = ["small", "medium", "large"]
     if not os.path.isdir(path_to_outputs):
         os.mkdir(path_to_outputs)
 
