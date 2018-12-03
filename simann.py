@@ -90,8 +90,8 @@ class SimulatedAnnealer(Annealer):
 
     def move(self):
         action = np.random.choice(self.actions, 1, p=[0.5, 0.3, 0.2])
-        # print(action)
-        action()
+        print(action[0])
+        action[0]()
 
     def transfer(self):
         student_name = ''
